@@ -1,3 +1,4 @@
+Co-developer w/ Taaha Khan (@taaha-khan).
 
 Setup:
 npm install express
