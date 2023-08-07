@@ -1,0 +1,25 @@
+{
+
+	"CANVAS_WIDTH": 1000,
+	"CANVAS_HEIGHT": 600,
+
+	"CAMERA_LAG": 0.0,
+
+	"PLAYER_SIZE": 40,
+
+	"PLAYER_MAX_SPEED_X": 12,
+	"PLAYER_GRAVITY": 1.8,
+	"PLAYER_TERMINAL_VELOCITY": 30,
+	"PLAYER_JUMP_POWER": -25,
+
+	"DEV_PORT": 9000,
+
+	"MESSAGES": {
+		"JOIN": "join",
+
+		"POSITION": "position",
+
+		"DISCONNECT": "disconnected"
+	}
+
+}
