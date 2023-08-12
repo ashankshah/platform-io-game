@@ -2,10 +2,13 @@
 
 class Player {
 
-	constructor(pos, isOther = false) {
+	constructor(pos, score = 10, health = 80, isOther = false) {
 		
 		this.pos = pos; // COORDS = CORNER
 		this.vel = createVector();
+		this.score = score;
+		this.health = health;
+
 
 		this.isOnGround = false;
 
@@ -54,14 +57,30 @@ class Player {
 		}
 
 		//Line to mouse
-		// stroke(0);
-		// strokeWeight(5);
-		// line(this.pos.x, this.pos.y, mouseX - (width / 2 - this.pos.x), mouseY - (height / 2 - this.pos.y))
+
+		// const center = createVector(this.pos.x + this.sizeh, this.pos.y + this.sizeh);
+		// const dir = createVector(mouseX - (width / 2 - this.pos.x + this.sizeh), mouseY - (height / 2 - this.pos.y + this.sizeh))
+
+		// const angle = Math.atan2((mouseY - (height / 2 - center.y)), (mouseX - (width / 2 - center.x))); 
+		// const dir = p5.Vector.fromAngle(angle).mult(15);
+
+		// const dir = p5.Vector.sub(mousePos, center).add(center);
+
+		// stroke(255);
+		// strokeWeight(10);
+		// line(center.x, center.y, dir.x, dir.y);
 		// strokeWeight(1);
 	}
 	
     // Function to update player
     update(platforms) {
+		
+		//based on difference
+		// this.score += (Constants.MAP_HEIGHT - this.pos.y) * Constants.PLAYER_BASE_POINTS;
+
+		//based on percentage
+		//1 - ratio of y pos to map height (flipped canvas coords), offset of 0.2 so points are not very low at bottom, multiplied by maxp possible points per frame
+		this.score += ((1 - (this.pos.y/Constants.MAP_HEIGHT)) + 0.2) * Constants.PLAYER_MAX_POINTS;
 
 		// Apply gravity to player's vertical speed
 		this.vel.y += this.gravity;
@@ -88,38 +107,47 @@ class Player {
 		// CHATGPT
 
 		// Can only ever be touching 2 platforms at once
-		let touches = 0;
+
+		let bottom = 0;
+		let top = 0;
+		let left = 0;
+		let right = 0;
 
 		// Loop through all platforms (assuming platforms is an array of objects with x, y, width, and height properties)
 		for (const platform of platforms) {
 
 			// Not <= or >= to stop from corner snapping on top/bottom
-
-			// Check if the player is colliding with the platform from the top
+			// Check if the player is colliding with the top of a platform
 			if (
-				this.pos.y + this.size > platform.pos.y &&
-				this.pos.y < platform.pos.y &&
-				this.pos.x + this.size > platform.pos.x &&
-				this.pos.x < platform.pos.x + platform.width
+				this.pos.y + this.size >= platform.pos.y &&
+				this.pos.y <= platform.pos.y &&
+				this.pos.x + this.size >= platform.pos.x &&
+				this.pos.x <= platform.pos.x + platform.width
 			) {
 				this.pos.y = platform.pos.y - this.size;
 				this.vel.y = 0;
-				touches++;
+				top++;
 			}
 
-			// Check if the player is colliding with the platform from the bottom
+			// Check if the player is colliding with the bottom of a platform
 			else if (
-				this.pos.y < platform.pos.y + platform.height &&
-				this.pos.y + this.size > platform.pos.y + platform.height &&
-				this.pos.x + this.size > platform.pos.x &&
-				this.pos.x < platform.pos.x + platform.width
+				this.pos.y <= platform.pos.y + platform.height &&
+				this.pos.y + this.size >= platform.pos.y + platform.height &&
+				this.pos.x + this.size >= platform.pos.x &&
+				this.pos.x <= platform.pos.x + platform.width
+
+				// Cannot be touching both the top of a platform and the bottom of another platform
+				// Fixes snapping when 2 platforms are stacked
+				&& top == 0
+
 			) {
 				this.pos.y = platform.pos.y + platform.height;
 				this.vel.y = -0.001; // nonzero to not reset jump
-				touches++;
+				// this.vel.y = 0;
+				bottom++;
 			}
-		
-			// Check if the player is colliding with the platform from the left
+			
+			// Check if the player is colliding with the left of a platform
 			else if (
 				this.pos.x + this.size >= platform.pos.x &&
 				this.pos.x <= platform.pos.x &&
@@ -130,10 +158,10 @@ class Player {
 				this.pos.x = platform.pos.x - this.size - 1;
 				this.vel.x = 0;
 				this.vel.y = 0;
-				touches++;
+				left++;
 			}
 			
-			// Check if the player is colliding with the platform from the right
+			// Check if the player is colliding with the right of a platform
 			else if (
 				this.pos.x <= platform.pos.x + platform.width &&
 				this.pos.x + this.size >= platform.pos.x + platform.width &&
@@ -144,11 +172,11 @@ class Player {
 				this.pos.x = platform.pos.x + platform.width + 1;
 				this.vel.x = 0;
 				this.vel.y = 0;
-				touches++;
+				right++
 			}
 
 			// Clip after touching 2 platforms
-			if (touches >= 2) {
+			if (left + right + top + bottom >= 2) {
 				break;
 			}
 		}
